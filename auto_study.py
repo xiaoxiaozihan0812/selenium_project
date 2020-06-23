@@ -1,8 +1,8 @@
 #!/user/bin/env python
 # -*- coding: utf-8 -*-
-# @Time     : 2019/9/15 18:30
+# @Time     : 2020/6/15 13:30
 # @Author   : zihan.zhao
-# @File     : auto_study.pu
+# @File     : TestDemo.py
 # @Software : PyCharm
 import os
 os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
@@ -22,10 +22,17 @@ import threading
 import pytesseract
 import chaojiying
 
-
+a=0
+num = 0
+num1 = 0
+num2=0
 
 def indexhtml(user,password):
-
+    time.sleep(1)
+    driver.get('http://zzx.ouchn.edu.cn/edu/public/student/#/login')
+    time.sleep(1)
+    driver.refresh()
+    time.sleep(1)
     driver.find_element_by_xpath('//input[@type="text"]').send_keys(user)
     driver.find_element_by_xpath('//input[@type="password"]').send_keys(password)
 
@@ -53,19 +60,19 @@ def login(captcha,user):
     driver.find_element_by_class_name('logC_btn').click()
     print('请等待此账号提示登录成功，提示成功后即可打开新的程序来登录新账号')
     lb.insert(tk.END, '请等待此账号提示登录成功，提示成功后即可打开新的程序来登录新账号')
-    time.sleep(4)
+    time.sleep(5)
     if len(driver.find_elements_by_xpath('//div[@class="title"]')) <3:
-        print('WARNING:验证码识别错误，请关闭程序重新启动程序进行账号登录!!!')
-        lb.insert(tk.END, 'WARNING:验证码识别错误，请关闭程序重新启动程序进行账号登录!!!')
+        print('WARNING:验证码识别错误，将自动重新识别')
+        lb.insert(tk.END, 'WARNING:验证码识别错误，将自动重新识别')
+        run()
 
     else:
-        print('请提醒账号主人,自动学习期间请不要登录此账号，否则程序会被中断')
-        lb.insert(tk.END, '请提醒账号主人,自动学习期间请不要登录此账号，否则程序会被中断')
         print('账号', user, '登录成功，开始学习')
         lb.insert(tk.END, '账号' + user + '登录成功，开始学习')
         startlearn(user)
 def startlearn(user):
     time.sleep(2)
+
     if len(driver.find_elements_by_xpath('//div[@class="title"]'))>1:
         try:
             print('一共查询到有', str(len(driver.find_elements_by_xpath('//div[@class="title"]'))), '门课程')
@@ -77,34 +84,46 @@ def startlearn(user):
                 else:
                     print('进入第' ,str(i + 1) ,'门课程' , driver.find_elements_by_xpath('//div[@class="title"]')[i].text)
                     lb.insert(tk.END, '进入第' +str(i + 1) +'门课程' + driver.find_elements_by_xpath('//div[@class="title"]')[i].text)
-                    driver.refresh()
-                    time.sleep(2)
                     subject=driver.find_elements_by_xpath('//div[@class="title"]')[i].text
-
                     driver.find_elements_by_xpath('//div[@class="title"]')[i].click()
+                    time.sleep(3)
+                    if len(driver.find_elements_by_xpath('//li[@class="chapterItem"]'))>1:
+                        for j in driver.find_elements_by_xpath('//li[@class="chapterItem"]'):
+                            j.click()
+                            time.sleep(1)
 
-                    for j in driver.find_elements_by_xpath('//li[@class="chapterItem"]'):
-                        j.click()
-                        time.sleep(2)
-
-                    for k in range(len(driver.find_elements_by_xpath('//li[@class="setionItem"]'))):
-                        print('开始学习第',str(i+1),'门课程',subject,'的第',str(k+1),'节课...')
-                        lb.insert(tk.END, '开始学习第'+str(i+1)+'门课程'+subject+'的第'+str(k+1)+'节课...',)
-                        if '100' in driver.find_elements_by_xpath('//span[@class="jdb"]')[k].text:
-                            print('第',str(i+1),'门课程',subject,'的第',str(k+1),'节课','已经学完，开始学习下一小节')
-                            lb.insert(tk.END, '第'+str(i+1)+'门课程'+subject+'的第'+str(k+1)+'节课'+'已经学完，开始学习下一小节')
+                        for k in range(len(driver.find_elements_by_xpath('//li[@class="setionItem"]'))):
+                            print('开始学习第',str(i+1),'门课程',subject,'的第',str(k+1),'节课...')
+                            lb.insert(tk.END, '开始学习第'+str(i+1)+'门课程'+subject+'的第'+str(k+1)+'节课...',)
+                            if '100' in driver.find_elements_by_xpath('//span[@class="jdb"]')[k].text:
+                                print('第',str(i+1),'门课程',subject,'的第',str(k+1),'节课','已经学完，开始学习下一小节')
+                                lb.insert(tk.END, '第'+str(i+1)+'门课程'+subject+'的第'+str(k+1)+'节课'+'已经学完，开始学习下一小节')
+                            else:
+                                element=driver.find_elements_by_xpath('//li[@class="setionItem"]')[k]
+                                driver.execute_script("arguments[0].click();", element)
+                                answerquestion()
+                                wait.until(EC.visibility_of_element_located((By.XPATH,'//div[@class="backbtn btn"]')))
+                                time.sleep(5)
+                                driver.find_element_by_xpath('//div[@class="backbtn btn"]').click()
+                                time.sleep(5)
+                                for j in driver.find_elements_by_xpath('//li[@class="chapterItem"]'):
+                                    j.click()
+                                    time.sleep(2)
+                        driver.find_element_by_xpath('//li[@class="childActive"]').click()
+                    else:
+                        global num2
+                        num2 += 1
+                        if num2 == 5:
+                            run()
+                            num2 = 0
                         else:
-                            element=driver.find_elements_by_xpath('//li[@class="setionItem"]')[k]
-                            driver.execute_script("arguments[0].click();", element)
-                            answerquestion()
-                            wait.until(EC.visibility_of_element_located((By.XPATH,'//div[@class="backbtn btn"]')))
+                            print('WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
+                            lb.insert(tk.END, 'WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
+                            driver.get('http://zzx.ouchn.edu.cn/edu/public/student/#/courseList/1')
                             time.sleep(5)
-                            driver.find_element_by_xpath('//div[@class="backbtn btn"]').click()
+                            driver.refresh()
                             time.sleep(5)
-                            for j in driver.find_elements_by_xpath('//li[@class="chapterItem"]'):
-                                j.click()
-                                time.sleep(2)
-                    driver.find_element_by_xpath('//li[@class="childActive"]').click()
+                            startlearn(user)
 
             print(user,'学习结束')
             lb.insert(tk.END, user+'学习结束',)
@@ -112,17 +131,33 @@ def startlearn(user):
             driver.quit()
 
         except:
+            global num1
+            num1+=0
+            if num1==5:
+                run()
+                num1=0
+            else:
+                print('WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
+                lb.insert(tk.END, 'WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
+                driver.get('http://zzx.ouchn.edu.cn/edu/public/student/#/courseList/1')
+                time.sleep(5)
+                driver.refresh()
+                time.sleep(5)
+                startlearn(user)
+    else:
+        global num
+        num+=1
+        if num==5:
+            run()
+            num=0
+        else:
             print('WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
             lb.insert(tk.END, 'WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
             driver.get('http://zzx.ouchn.edu.cn/edu/public/student/#/courseList/1')
-            time.sleep(10)
+            time.sleep(5)
+            driver.refresh()
+            time.sleep(5)
             startlearn(user)
-    else:
-        print('WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
-        lb.insert(tk.END, 'WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
-        driver.get('http://zzx.ouchn.edu.cn/edu/public/student/#/courseList/1')
-        time.sleep(10)
-        startlearn(user)
 
 def answerquestion():
     time.sleep(5)
@@ -147,6 +182,7 @@ def answerquestion():
             answer=driver.find_elements_by_xpath('//div[@class="right_key"]//span')[j].text
             print(answer)
             lb.insert(tk.END, answer)
+            time.sleep(1)
             if 'A' in answer:
                 driver.find_elements_by_xpath('//div[@class="subject"]')[j].find_elements_by_xpath('.//div[@class="answer"]')[0].click()
 
@@ -191,16 +227,25 @@ def thread_it(func):
 
 
 def run():
-    user = inputuser.get()
-    password = inputpassword.get()
-    print('请保持网络状态良好，同时登录多个账号观看视频，会占用电脑很大的带宽，不建议使用wifi，建议电脑连接网线，网络状态差会影响学习进度,')
-    lb.insert(tk.END, '请保持网络状态良好，同时登录多个账号观看视频，会占用电脑很大的带宽，不建议使用wifi，建议电脑连接网线，网络状态差会影响学习进度,')
-    indexhtml(user,password)
-    getcaptcha()
-    login(use_getcaptcha(),user)
+    global a
+    a+=1
+    if a>=5:
+        print('连续登陆五次失败，可能是网站崩溃或者验证码到期，请检查后重启程序再试')
+        lb.insert(tk.END, '连续登陆五次失败，可能是网站崩溃或者验证码到期，请检查后重启程序再试')
+    else:
+        user = inputuser.get()
+        user = ''.join(user.split())
+        password = inputpassword.get()
+        password = ''.join(password.split())
+        print('请保持网络状态良好，同时登录多个账号观看视频，会占用电脑很大的带宽，不建议使用wifi，建议电脑连接网线，网络状态差会影响学习进度,')
+        lb.insert(tk.END, '请保持网络状态良好，同时登录多个账号观看视频，会占用电脑很大的带宽，不建议使用wifi，建议电脑连接网线，网络状态差会影响学习进度,')
+        indexhtml(user,password)
+        getcaptcha()
+        login(use_getcaptcha(),user)
 
 
 if __name__ == '__main__':
+
     # 第1步，实例化object，建立窗口window
     window = tk.Tk()
     # 第2步，给窗口的可视化起名字
@@ -222,17 +267,17 @@ if __name__ == '__main__':
     scr.config(command=lb.yview)
     lb.pack(side=tk.LEFT, expand=tk.YES,fill=tk.BOTH)
     scr.pack(side=tk.RIGHT, fill=tk.Y)
-    chaojiying = chaojiying.Chaojiying_Client('')
+    chaojiying = chaojiying.Chaojiying_Client('xiaozihan0812', 'xiaozihan0812',
+                                              '49fd6c3dac503e8410f71ab7e926285b')  # 用户中心>>软件ID 生成一个替换 96001  # 本地图片文件路径 来替换 a.jpg 有时WIN系统须要//									#1902 验证码类型
     chrome_options = Options()
     # # 设置chrome浏览器无界面模式
-    chrome_options.add_argument('--headless')
+    # chrome_options.add_argument('--headless')
     chrome_options.add_argument("--mute-audio")
     # webdriver.Firefox(executable_path='.\Google\Chrome\Application\chrome.exe')
     driver = webdriver.Chrome(r'./settings/chromedriver.exe', chrome_options=chrome_options)
     driver.maximize_window()
-    driver.implicitly_wait(120)
+    driver.implicitly_wait(60)
     wait = WebDriverWait(driver, 3600, 0.5)
-    driver.get('http://zzx.ouchn.edu.cn/edu/public/student/')
     window.mainloop()
 
 
