@@ -113,15 +113,13 @@ def startlearn(user):
                     else:
                         global num2
                         num2 += 1
-                        if num2 == 5:
+                        if num2 == 10:
                             run()
                             num2 = 0
                         else:
                             print('WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
                             lb.insert(tk.END, 'WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
                             driver.get('http://zzx.ouchn.edu.cn/edu/public/student/#/courseList/1')
-                            time.sleep(5)
-                            driver.refresh()
                             time.sleep(5)
                             startlearn(user)
 
@@ -133,7 +131,7 @@ def startlearn(user):
         except:
             global num1
             num1+=0
-            if num1==5:
+            if num1==10:
                 run()
                 num1=0
             else:
@@ -141,21 +139,17 @@ def startlearn(user):
                 lb.insert(tk.END, 'WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
                 driver.get('http://zzx.ouchn.edu.cn/edu/public/student/#/courseList/1')
                 time.sleep(5)
-                driver.refresh()
-                time.sleep(5)
                 startlearn(user)
     else:
         global num
         num+=1
-        if num==5:
+        if num==10:
             run()
             num=0
         else:
             print('WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
             lb.insert(tk.END, 'WARNING:网络波动，页面长时间未能加载，正在尝试重新运行!!!')
             driver.get('http://zzx.ouchn.edu.cn/edu/public/student/#/courseList/1')
-            time.sleep(5)
-            driver.refresh()
             time.sleep(5)
             startlearn(user)
 
@@ -230,8 +224,8 @@ def run():
     global a
     a+=1
     if a>=5:
-        print('连续登陆五次失败，可能是网站崩溃或者验证码到期，请检查后重启程序再试')
-        lb.insert(tk.END, '连续登陆五次失败，可能是网站崩溃或者验证码到期，请检查后重启程序再试')
+        print('连续登陆五次失败，可能是网站崩溃或者验证码到期或者宽带断线，请检查后重启程序再试')
+        lb.insert(tk.END, '连续登陆五次失败，可能是网站崩溃或者验证码到期或者宽带断线，请检查后重启程序再试')
     else:
         user = inputuser.get()
         user = ''.join(user.split())
@@ -249,7 +243,7 @@ if __name__ == '__main__':
     # 第1步，实例化object，建立窗口window
     window = tk.Tk()
     # 第2步，给窗口的可视化起名字
-    window.title('Auto Study program - V1.0')
+    window.title('Auto Study program - V1.2')
     window.geometry("700x800")
     labeluser = tk.Label(window, text="请输入账号")
     labeluser.pack()
@@ -271,7 +265,7 @@ if __name__ == '__main__':
                                               '49fd6c3dac503e8410f71ab7e926285b')  # 用户中心>>软件ID 生成一个替换 96001  # 本地图片文件路径 来替换 a.jpg 有时WIN系统须要//									#1902 验证码类型
     chrome_options = Options()
     # # 设置chrome浏览器无界面模式
-    # chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--headless')
     chrome_options.add_argument("--mute-audio")
     # webdriver.Firefox(executable_path='.\Google\Chrome\Application\chrome.exe')
     driver = webdriver.Chrome(r'./settings/chromedriver.exe', chrome_options=chrome_options)
